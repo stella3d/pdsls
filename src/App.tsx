@@ -294,7 +294,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </datalist>
           <div class="w-full">
             <label for="input" class="ml-0.5 text-left text-sm">
-              PDS URL/At-URI/DID/Handle
+              Enter PDS URL / At-URI / DID / Handle
             </label>
           </div>
           <div class="flex gap-x-2">
