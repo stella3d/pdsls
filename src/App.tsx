@@ -236,10 +236,18 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   const processInput = action(async (formData: FormData) => {
     const input = formData.get("input")?.toString();
     if (!input) return;
-    if (input.startsWith("https://"))
+    if (
+      !input.startsWith("https://bsky.app/") &&
+      !input.startsWith("https://main.bsky.dev/") &&
+      input.startsWith("https://")
+    )
       throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
 
-    const uri = input.replace("at://", "");
+    const uri = input
+      .replace("at://", "")
+      .replace("https://bsky.app/profile/", "")
+      .replace("https://main.bsky.dev/profile/", "")
+      .replace("/post/", "/app.bsky.feed.post/");
     let did = "";
     let pds = "";
     try {
