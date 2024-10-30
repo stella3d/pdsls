@@ -273,7 +273,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
       </div>
       <div class="mb-2 text-sm">
         <a class="text-lightblue-500" href="https://github.com/notjuliet/pdsls">
-          experimental build
+          source code
         </a>{" "}
         - made by{" "}
         <a
