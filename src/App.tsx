@@ -2,186 +2,123 @@ import { createSignal, onMount, For, Show, type Component } from "solid-js";
 import { CredentialManager, XRPC } from "@atcute/client";
 import {
   ComAtprotoRepoDescribeRepo,
+  ComAtprotoRepoGetRecord,
   ComAtprotoRepoListRecords,
   ComAtprotoSyncListRepos,
 } from "@atcute/client/lexicons";
+import createProp from "./utils/createProp.js";
+import {
+  A,
+  action,
+  redirect,
+  RouteSectionProps,
+  useParams,
+} from "@solidjs/router";
+import { getPDS, resolveHandle } from "./utils/api.js";
 
-const [rpc, setRPC] = createSignal<XRPC | undefined>(undefined);
-let manager: CredentialManager;
-const [repoList, setRepoList] = createSignal<ComAtprotoSyncListRepos.Repo[]>(
-  [],
+type Theme = "light" | "dark";
+export const theme = createProp<Theme>(
+  localStorage?.theme || "light",
+  function (newState: Theme) {
+    if (newState === "dark") document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+
+    localStorage.theme = newState;
+    this[1](newState);
+    return newState;
+  },
 );
-const [cursor, setCursor] = createSignal<string | undefined>();
-const [did, setDID] = createSignal<string | undefined>();
-const [collection, setCollection] = createSignal<string | undefined>();
 
-const ListRepos: Component = () => {
-  const [pdsUrl, setPdsUrl] = createSignal("");
-  const [notice, setNotice] = createSignal("");
-  const [pdsList, setPdsList] = createSignal<any>();
+let rpc: XRPC;
+const [notice, setNotice] = createSignal("");
 
-  onMount(async () => {
-    //const res = await fetch(
-    //  "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
-    //);
-    const res = await fetch("../state.json");
-    setPdsList(await res.json());
+const RecordView: Component = () => {
+  const params = useParams();
+  const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
+
+  onMount(() => {
+    let pds = params.pds;
+    if (pds) {
+      if (!pds.startsWith("https://")) pds = `https://${pds}`;
+      rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    }
+    fetchRecord(params.rkey);
   });
 
-  const fetchListReposPage = async () => {
-    const res = await rpc()!.get("com.atproto.sync.listRepos", {
-      params: { limit: 500, cursor: cursor() },
-    });
-    setCursor(res.data.repos.length < 500 ? undefined : res.data.cursor);
-    setRepoList(repoList().concat(res.data.repos));
-  };
-
-  const fetchPds = async (pdsUrl: string) => {
-    setNotice("");
-    setRepoList([]);
+  const fetchRecord = async (rkey: string) => {
     try {
-      if (!pdsUrl.startsWith("https://")) pdsUrl = `https://${pdsUrl}`;
-      manager = new CredentialManager({ service: pdsUrl });
-      setRPC(new XRPC({ handler: manager }));
-      fetchListReposPage();
+      setNotice("Loading...");
+      const res = await rpc.get("com.atproto.repo.getRecord", {
+        params: {
+          repo: params.did,
+          collection: params.collection,
+          rkey: rkey,
+        },
+      });
+      setRecord(res.data);
+      setNotice("");
     } catch (err: any) {
       setNotice(err.message);
     }
   };
 
   return (
-    <div class="flex flex-col items-center">
-      <form
-        class="mb-5 flex items-center gap-x-2"
-        onsubmit={(e) => e.preventDefault()}
-      >
-        <Show when={pdsList()}>
-          <datalist id="pdsInput">
-            <For each={Object.keys(pdsList().pdses)}>
-              {(pds) => <option value={pds}></option>}
-            </For>
-          </datalist>
-        </Show>
-        <label for="pdsInput">PDS URL</label>
-        <input
-          type="text"
-          id="pdsInput"
-          list="pdsInput"
-          spellcheck={false}
-          class="border border-black px-2 py-1"
-          onInput={(e) => setPdsUrl(e.currentTarget.value)}
-        />
-        <button
-          onclick={() => fetchPds(pdsUrl())}
-          class="rounded bg-gray-600 px-2 py-1 text-sm font-bold text-white hover:bg-gray-800"
-        >
-          Go
-        </button>
-      </form>
-      <Show when={notice()}>
-        <div class="m-3">{notice()}</div>
-      </Show>
-      <Show when={repoList().length}>
-        <div class="flex flex-col space-y-1">
-          <For each={repoList()}>
-            {(repo) => (
-              <div
-                class="cursor-pointer font-mono text-blue-600 hover:underline"
-                onclick={() => setDID(repo.did)}
-              >
-                {repo.did}
-              </div>
-            )}
-          </For>
-          <Show when={cursor()}>
-            <button
-              type="button"
-              onclick={() => fetchListReposPage()}
-              class="mb-2 rounded bg-gray-600 px-2 py-1 font-bold text-white hover:bg-gray-800"
-            >
-              Load More
-            </button>
-          </Show>
-        </div>
-      </Show>
+    <div class="flex flex-col overflow-y-auto text-sm">
+      <span>uri: {record()?.uri}</span>
+      <span>cid: {record()?.cid}</span>
+      <span>value:</span>
+      <pre class="ml-5">{JSON.stringify(record()?.value, null, 2)}</pre>
     </div>
   );
 };
 
-const ListCollections: Component = () => {
-  const [collections, setCollections] = createSignal<string[]>([]);
-  const [didDoc, setDidDoc] =
-    createSignal<ComAtprotoRepoDescribeRepo.Output["didDoc"]>();
-
-  onMount(async () => {
-    setRepoList([]);
-    const res = await rpc()!.get("com.atproto.repo.describeRepo", {
-      params: { repo: did()! },
-    });
-    setCollections(res.data.collections);
-    setDidDoc(res.data.didDoc);
-  });
-
-  return (
-    <div class="flex flex-col space-y-1">
-      <For each={collections()}>
-        {(collection) => (
-          <div
-            class="cursor-pointer font-mono text-blue-600 hover:underline"
-            onclick={() => setCollection(collection)}
-          >
-            {collection}
-          </div>
-        )}
-      </For>
-      <div class="mt-4 max-w-sm">
-        <pre class="overflow-y-auto text-sm">
-          {JSON.stringify(didDoc(), null, 2)}
-        </pre>
-      </div>
-    </div>
-  );
-};
-
-const ListRecords: Component = () => {
-  const [recordsList, setRecordsList] = createSignal<
-    ComAtprotoRepoListRecords.Record[]
-  >([]);
+const CollectionView: Component = () => {
+  const params = useParams();
+  const [cursorRecord, setCursorRecord] = createSignal<string>();
+  const [records, setRecords] =
+    createSignal<ComAtprotoRepoListRecords.Record[]>();
 
   onMount(() => {
-    fetchListRecordsPage();
+    let pds = params.pds;
+    if (!pds.startsWith("https://")) pds = `https://${pds}`;
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    fetchListRecords(params.collection);
   });
 
-  const fetchListRecordsPage = async () => {
-    const res = await rpc()!.get("com.atproto.repo.listRecords", {
+  const fetchListRecords = async (collection: string) => {
+    setNotice("Loading...");
+    const res = await rpc.get("com.atproto.repo.listRecords", {
       params: {
-        repo: did()!,
-        collection: collection()!,
+        repo: params.did,
+        collection: collection,
         limit: 100,
-        cursor: cursor(),
+        cursor: cursorRecord(),
       },
     });
-    setCursor(res.data.records.length < 100 ? undefined : res.data.cursor);
-    setRecordsList(recordsList().concat(res.data.records));
+    setCursorRecord(
+      res.data.records.length < 100 ? undefined : res.data.cursor,
+    );
+    setRecords(records()?.concat(res.data.records) ?? res.data.records),
+      setNotice("");
   };
 
   return (
-    <div class="flex flex-col space-y-1">
-      <For each={recordsList()}>
+    <div class="flex flex-col">
+      <For each={records()}>
         {(record) => (
-          <div
-            class="cursor-pointer font-mono text-blue-600 hover:underline"
-            onclick={() => {}}
+          <A
+            href={`${record.uri.split("/").pop()}`}
+            class="text-lightblue-500 hover:underline"
           >
             {record.uri.split("/").pop()!}
-          </div>
+          </A>
         )}
       </For>
-      <Show when={cursor()}>
+      <Show when={cursorRecord()}>
         <button
           type="button"
-          onclick={() => fetchListRecordsPage()}
-          class="mb-2 rounded bg-gray-600 px-2 py-1 font-bold text-white hover:bg-gray-800"
+          onclick={() => fetchListRecords(params.collection)}
+          class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
         >
           Load More
         </button>
@@ -190,13 +127,250 @@ const ListRecords: Component = () => {
   );
 };
 
-const App: Component = () => {
+const RepoView: Component = () => {
+  const params = useParams();
+  const [repo, setRepo] = createSignal<ComAtprotoRepoDescribeRepo.Output>();
+
+  onMount(async () => {
+    setNotice("Loading...");
+    let pds = params.pds;
+    if (!pds.startsWith("https://")) pds = `https://${pds}`;
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    const res = await rpc.get("com.atproto.repo.describeRepo", {
+      params: { repo: params.did },
+    });
+    setNotice("");
+    setRepo(res.data);
+  });
+
   return (
-    <div class="m-5 flex flex-col items-center">
-      <h1 class="mb-5 text-xl font-bold">PDSls</h1>
-      <ListRepos />
+    <>
+      <div class="flex w-fit flex-col self-center">
+        <For each={repo()?.collections}>
+          {(collection) => (
+            <A
+              href={`${collection}`}
+              class="text-lightblue-500 hover:underline"
+            >
+              {collection}
+            </A>
+          )}
+        </For>
+      </div>
+      <div class="mt-4">
+        <pre class="overflow-y-auto text-sm">
+          {JSON.stringify(repo()?.didDoc, null, 2)}
+        </pre>
+      </div>
+    </>
+  );
+};
+
+const PdsView: Component = () => {
+  const params = useParams();
+  const [cursorRepo, setCursorRepo] = createSignal<string>();
+  const [repos, setRepos] = createSignal<ComAtprotoSyncListRepos.Repo[]>();
+
+  onMount(() => {
+    setNotice("");
+    let pds = params.pds;
+    if (!pds.startsWith("https://")) pds = `https://${pds}`;
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    fetchRepos();
+  });
+
+  const fetchRepos = async () => {
+    try {
+      setNotice("Loading...");
+      const res = await rpc.get("com.atproto.sync.listRepos", {
+        params: { limit: 1000, cursor: cursorRepo() },
+      });
+      setCursorRepo(res.data.repos.length < 1000 ? undefined : res.data.cursor);
+      setRepos(repos()?.concat(res.data.repos) ?? res.data.repos);
+      setNotice("");
+    } catch (err: any) {
+      setNotice(err.message);
+    }
+  };
+
+  return (
+    <>
+      <For each={repos()}>
+        {(repo) => (
+          <A href={`${repo.did}`} class="text-lightblue-500 hover:underline">
+            {repo.did}
+          </A>
+        )}
+      </For>
+      <Show when={cursorRepo()}>
+        <button
+          type="button"
+          onclick={() => fetchRepos()}
+          class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+        >
+          Load More
+        </button>
+      </Show>
+    </>
+  );
+};
+
+const Layout: Component<RouteSectionProps<unknown>> = (props) => {
+  const params = useParams();
+  const [pdsList, setPdsList] = createSignal<any>();
+
+  onMount(async () => {
+    setNotice("");
+    let pds = params.pds;
+    if (pds) {
+      if (!pds.startsWith("https://")) pds = `https://${pds}`;
+      rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    }
+    const res = await fetch(
+      "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
+    );
+    const json = await res.json();
+    setPdsList(Object.keys(json.pdses));
+  });
+
+  const isPds = action(async (formData: FormData) => {
+    const pdsUrl = formData
+      .get("pdsUrl")
+      ?.toString()
+      .replace("https://", "")
+      .replace("/", "");
+    throw redirect(`/${pdsUrl}`);
+  });
+
+  const isUri = action(async (formData: FormData) => {
+    const uri = formData.get("uri")?.toString().replace("at://", "");
+    if (!uri) return;
+    let did: string;
+    if (uri?.startsWith("did:")) did = uri.split("/")[0];
+    else did = await resolveHandle(uri.split("/")[0]);
+    let pds = await getPDS(did);
+    pds = pds.replace("https://", "");
+    throw redirect(`/${pds}/${did}/${uri.split("/").slice(1).join("/")}`);
+  });
+
+  return (
+    <div class="m-5 flex flex-col items-center dark:text-white">
+      <div class="flex w-[20rem]">
+        <div class="basis-1/3">
+          <span
+            class="cursor-pointer"
+            onclick={() =>
+              theme.set(theme.get() === "light" ? "dark" : "light")
+            }
+          >
+            {theme.get()}
+          </span>
+        </div>
+        <div class="mb-2 basis-1/3 text-center text-xl font-bold">
+          <A href="/">PDSls</A>
+        </div>
+      </div>
+      <div class="mb-2 text-sm">
+        "experimental" build - made by{" "}
+        <a
+          class="text-lightblue-500"
+          href="https://bsky.app/profile/did:plc:b3pn34agqqchkaf75v7h43dk"
+        >
+          juliet
+        </a>
+      </div>
+      <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
+        <form class="flex items-center gap-x-2" method="post" action={isPds}>
+          <datalist id="pdsInput">
+            <For each={pdsList()}>{(pds) => <option value={pds}></option>}</For>
+          </datalist>
+          <label for="inputPds" class="text-sm">
+            PDS URL
+          </label>
+          <input
+            type="text"
+            list="pdsInput"
+            id="inputPds"
+            name="pdsUrl"
+            spellcheck={false}
+            class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          />
+          <button
+            type="submit"
+            class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+          >
+            Go
+          </button>
+        </form>
+        <form
+          class="mt-2 flex items-center gap-x-2"
+          method="post"
+          action={isUri}
+        >
+          <label for="inputUri" class="text-sm">
+            AT-URI
+          </label>
+          <input
+            type="text"
+            id="inputUri"
+            placeholder="Handle/DID works too"
+            name="uri"
+            spellcheck={false}
+            class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          />
+          <button
+            type="submit"
+            class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+          >
+            Go
+          </button>
+        </form>
+        <div class="m-2 min-h-6">{notice()}</div>
+        <div class="mb-3 font-mono">
+          <Show when={params.pds}>
+            <A
+              end
+              href={params.pds}
+              inactiveClass="text-lightblue-500 hover:underline"
+            >
+              {params.pds}
+            </A>
+          </Show>
+          <Show when={params.did}>
+            <span>{" / "}</span>
+            <A
+              end
+              href={`${params.pds}/${params.did}`}
+              inactiveClass="text-lightblue-500 hover:underline"
+            >
+              {params.did}
+            </A>
+          </Show>
+          <Show when={params.collection}>
+            <span>{" / "}</span>
+            <A
+              end
+              href={`${params.pds}/${params.did}/${params.collection}`}
+              inactiveClass="text-lightblue-500 hover:underline"
+            >
+              {params.collection}
+            </A>
+          </Show>
+          <Show when={params.rkey}>
+            <span>{" / " + params.rkey}</span>
+          </Show>
+        </div>
+        <div class="flex max-w-full flex-col space-y-1 font-mono">
+          <Show
+            when={params.pds || params.did || params.collection || params.rkey}
+            keyed
+          >
+            {props.children}
+          </Show>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default App;
+export { Layout, PdsView, RepoView, CollectionView, RecordView };

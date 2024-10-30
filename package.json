@@ -9,18 +9,19 @@
     "serve": "vite preview"
   },
   "devDependencies": {
-    "@types/node": "^22.7.7",
+    "@types/node": "^22.8.1",
     "prettier": "^3.3.3",
-    "prettier-plugin-tailwindcss": "^0.6.6",
-    "typescript": "^5.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "typescript": "^5.6.3",
     "unocss": "^0.63.6",
-    "vite": "^5.0.11",
-    "vite-plugin-solid": "^2.8.2"
+    "vite": "^5.4.10",
+    "vite-plugin-solid": "^2.10.2"
   },
   "dependencies": {
-    "@atcute/client": "^2.0.2",
+    "@atcute/client": "^2.0.3",
+    "@solidjs/router": "^0.14.10",
     "@unocss/reset": "^0.63.6",
-    "solid-js": "^1.8.11"
+    "solid-js": "^1.9.3"
   },
   "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
 }
