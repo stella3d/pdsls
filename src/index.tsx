@@ -15,7 +15,6 @@ import {
 render(
   () => (
     <Router root={Layout}>
-      <Route path="/" component={Layout} />
       <Route
         path="/:pds"
         component={() => (
