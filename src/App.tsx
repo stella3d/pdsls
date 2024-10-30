@@ -233,20 +233,15 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     setPdsList(Object.keys(json.pdses));
   });
 
-  const isPds = action(async (formData: FormData) => {
-    const pdsUrl = formData
-      .get("pdsUrl")
-      ?.toString()
-      .replace("https://", "")
-      .replace("/", "");
-    throw redirect(`/${pdsUrl}`);
-  });
+  const processInput = action(async (formData: FormData) => {
+    const input = formData.get("input")?.toString();
+    if (!input) return;
+    if (input.startsWith("https://"))
+      throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
 
-  const isUri = action(async (formData: FormData) => {
-    const uri = formData.get("uri")?.toString().replace("at://", "");
-    if (!uri) return;
+    const uri = input.replace("at://", "");
     let did: string;
-    if (uri?.startsWith("did:")) did = uri.split("/")[0];
+    if (uri.startsWith("did:")) did = uri.split("/")[0];
     else did = await resolveHandle(uri.split("/")[0]);
     let pds = await getPDS(did);
     pds = pds.replace("https://", "");
@@ -283,50 +278,35 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
         </a>
       </div>
       <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
-        <form class="flex items-center gap-x-2" method="post" action={isPds}>
+        <form
+          class="flex flex-col items-center gap-y-1"
+          method="post"
+          action={processInput}
+        >
           <datalist id="pdsInput">
             <For each={pdsList()}>{(pds) => <option value={pds}></option>}</For>
           </datalist>
-          <label for="inputPds" class="text-sm">
-            PDS URL
-          </label>
-          <input
-            type="text"
-            list="pdsInput"
-            id="inputPds"
-            name="pdsUrl"
-            spellcheck={false}
-            class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
-          />
-          <button
-            type="submit"
-            class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
-          >
-            Go
-          </button>
-        </form>
-        <form
-          class="mt-2 flex items-center gap-x-2"
-          method="post"
-          action={isUri}
-        >
-          <label for="inputUri" class="text-sm">
-            AT-URI
-          </label>
-          <input
-            type="text"
-            id="inputUri"
-            placeholder="Handle/DID works too"
-            name="uri"
-            spellcheck={false}
-            class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
-          />
-          <button
-            type="submit"
-            class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
-          >
-            Go
-          </button>
+          <div class="w-full">
+            <label for="input" class="ml-0.5 text-left text-sm">
+              PDS URL/At-URI/DID/Handle
+            </label>
+          </div>
+          <div class="flex gap-x-2">
+            <input
+              type="text"
+              list="pdsInput"
+              id="input"
+              name="input"
+              spellcheck={false}
+              class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            <button
+              type="submit"
+              class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+            >
+              Go
+            </button>
+          </div>
         </form>
         <div class="m-2 min-h-6">{notice()}</div>
         <div class="mb-3 font-mono">
