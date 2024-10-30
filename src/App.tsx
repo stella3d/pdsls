@@ -240,10 +240,16 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
       throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
 
     const uri = input.replace("at://", "");
-    let did: string;
-    if (uri.startsWith("did:")) did = uri.split("/")[0];
-    else did = await resolveHandle(uri.split("/")[0]);
-    let pds = await getPDS(did);
+    let did = "";
+    let pds = "";
+    try {
+      if (uri.startsWith("did:")) did = uri.split("/")[0];
+      else did = await resolveHandle(uri.split("/")[0]);
+      if (!did) throw Error;
+      pds = await getPDS(did);
+    } catch (err) {
+      setNotice("Could not resolve At-URI/DID/Handle");
+    }
     pds = pds.replace("https://", "");
     throw redirect(`/${pds}/${did}/${uri.split("/").slice(1).join("/")}`);
   });
