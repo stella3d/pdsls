@@ -267,7 +267,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             {theme.get()}
           </span>
         </div>
-        <div class="mb-2 basis-1/3 text-center text-xl font-bold">
+        <div class="mb-2 basis-1/3 text-center font-mono text-xl font-bold">
           <A href="/">PDSls</A>
         </div>
       </div>

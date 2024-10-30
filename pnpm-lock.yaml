@@ -21,9 +21,6 @@ importers:
         specifier: ^1.9.3
         version: 1.9.3
     devDependencies:
-      '@types/node':
-        specifier: ^22.8.1
-        version: 22.8.1
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -1562,6 +1559,7 @@ snapshots:
   '@types/node@22.8.1':
     dependencies:
       undici-types: 6.19.8
+    optional: true
 
   '@unocss/astro@0.63.6(rollup@4.24.2)(typescript@5.6.3)(vite@5.4.10(@types/node@22.8.1))':
     dependencies:
@@ -2150,7 +2148,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  undici-types@6.19.8: {}
+  undici-types@6.19.8:
+    optional: true
 
   unocss@0.63.6(postcss@8.4.47)(rollup@4.24.2)(typescript@5.6.3)(vite@5.4.10(@types/node@22.8.1)):
     dependencies:
