@@ -276,7 +276,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </span>
         </div>
         <div class="mb-2 basis-1/3 text-center font-mono text-xl font-bold">
-          <A href="/">PDSls</A>
+          <a href="https://pdsls.dev/">PDSls</a>
         </div>
       </div>
       <div class="mb-2 text-sm">
