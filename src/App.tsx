@@ -12,6 +12,7 @@ import {
   action,
   redirect,
   RouteSectionProps,
+  useAction,
   useParams,
 } from "@solidjs/router";
 import { getPDS, resolveHandle } from "./utils/api.js";
@@ -223,6 +224,15 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     setNotice("");
     let pds = params.pds;
     if (pds) {
+      if (pds === "at") {
+        const process = useAction(processInput);
+        const formData = new FormData();
+        formData.append(
+          "input",
+          `${params.did}${params.collection ? "/" + params.collection : ""}${params.rkey ? "/" + params.rkey : ""}`,
+        );
+        process(formData);
+      }
       if (!pds.startsWith("https://")) pds = `https://${pds}`;
       rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     }
@@ -259,7 +269,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
       setNotice("Could not resolve At-URI/DID/Handle");
     }
     pds = pds.replace("https://", "");
-    throw redirect(`/${pds}/${did}/${uri.split("/").slice(1).join("/")}`);
+    throw redirect(
+      `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
+    );
   });
 
   return (

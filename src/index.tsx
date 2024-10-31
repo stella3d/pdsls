@@ -26,7 +26,7 @@ render(
       <Route
         path="/:pds/:did"
         component={() => (
-          <Show keyed when={useParams().did}>
+          <Show keyed when={useParams().pds !== "at" && useParams().did}>
             <RepoView />
           </Show>
         )}
@@ -34,7 +34,7 @@ render(
       <Route
         path="/:pds/:did/:collection"
         component={() => (
-          <Show keyed when={useParams().collection}>
+          <Show keyed when={useParams().pds !== "at" && useParams().collection}>
             <CollectionView />
           </Show>
         )}
@@ -42,7 +42,7 @@ render(
       <Route
         path="/:pds/:did/:collection/:rkey"
         component={() => (
-          <Show keyed when={useParams().rkey}>
+          <Show keyed when={useParams().pds !== "at" && useParams().rkey}>
             <RecordView />
           </Show>
         )}
