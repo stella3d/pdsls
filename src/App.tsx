@@ -10,12 +10,14 @@ import createProp from "./utils/createProp.js";
 import {
   A,
   action,
+  Params,
   redirect,
   RouteSectionProps,
   useAction,
   useParams,
 } from "@solidjs/router";
 import { getPDS, resolveHandle } from "./utils/api.js";
+import { JSONValue } from "./lib/json.jsx";
 
 type Theme = "light" | "dark";
 export const theme = createProp<Theme>(
@@ -33,11 +35,54 @@ export const theme = createProp<Theme>(
 let rpc: XRPC;
 const [notice, setNotice] = createSignal("");
 
+const processInput = action(async (formData: FormData) => {
+  const input = formData.get("input")?.toString();
+  if (!input) return;
+  if (
+    !input.startsWith("https://bsky.app/") &&
+    !input.startsWith("https://main.bsky.dev/") &&
+    input.startsWith("https://")
+  )
+    throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
+
+  const uri = input
+    .replace("at://", "")
+    .replace("https://bsky.app/profile/", "")
+    .replace("https://main.bsky.dev/profile/", "")
+    .replace("/post/", "/app.bsky.feed.post/");
+  let did = "";
+  let pds = "";
+  try {
+    if (uri.startsWith("did:")) did = uri.split("/")[0];
+    else did = await resolveHandle(uri.split("/")[0]);
+    if (!did) throw Error;
+    pds = await getPDS(did);
+  } catch (err) {
+    setNotice("Could not resolve At-URI/DID/Handle");
+  }
+  pds = pds.replace("https://", "");
+  throw redirect(
+    `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
+  );
+});
+
+const redirectAtURI = (params: Params) => {
+  const process = useAction(processInput);
+  const formData = new FormData();
+  formData.append(
+    "input",
+    `${params.did}${params.collection ? "/" + params.collection : ""}${params.rkey ? "/" + params.rkey : ""}`,
+  );
+  process(formData);
+};
+
 const RecordView: Component = () => {
   const params = useParams();
   const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
 
   onMount(() => {
+    console.log("test");
+    if (params.pds === "at") redirectAtURI(params);
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
     });
@@ -62,24 +107,11 @@ const RecordView: Component = () => {
   };
 
   return (
-    <div class="flex flex-col overflow-y-auto text-sm">
-      <span
-        class="cursor-pointer"
-        onclick={() => navigator.clipboard.writeText(record()!.uri)}
-      >
-        uri: {record()?.uri}
-      </span>
-      <span
-        class="cursor-pointer"
-        onclick={() => {
-          if (record()?.cid) navigator.clipboard.writeText(record()!.cid ?? "");
-        }}
-      >
-        cid: {record()?.cid}
-      </span>
-      <span>value:</span>
-      <pre class="ml-5">{JSON.stringify(record()?.value, null, 2)}</pre>
-    </div>
+    <Show when={record()}>
+      <div class="overflow-y-auto">
+        <JSONValue data={record() as any} repo={params.did} />
+      </div>
+    </Show>
   );
 };
 
@@ -90,6 +122,7 @@ const CollectionView: Component = () => {
     createSignal<ComAtprotoRepoListRecords.Record[]>();
 
   onMount(() => {
+    if (params.pds === "at") redirectAtURI(params);
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
     });
@@ -144,6 +177,7 @@ const RepoView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
+    if (params.pds === "at") redirectAtURI(params);
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
     });
@@ -233,15 +267,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   onMount(async () => {
     setNotice("");
     if (params.pds) {
-      if (params.pds === "at") {
-        const process = useAction(processInput);
-        const formData = new FormData();
-        formData.append(
-          "input",
-          `${params.did}${params.collection ? "/" + params.collection : ""}${params.rkey ? "/" + params.rkey : ""}`,
-        );
-        process(formData);
-      }
+      if (params.pds === "at") redirectAtURI(params);
       rpc = new XRPC({
         handler: new CredentialManager({ service: `https://${params.pds}` }),
       });
@@ -251,37 +277,6 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     );
     const json = await res.json();
     setPdsList(Object.keys(json.pdses));
-  });
-
-  const processInput = action(async (formData: FormData) => {
-    const input = formData.get("input")?.toString();
-    if (!input) return;
-    if (
-      !input.startsWith("https://bsky.app/") &&
-      !input.startsWith("https://main.bsky.dev/") &&
-      input.startsWith("https://")
-    )
-      throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
-
-    const uri = input
-      .replace("at://", "")
-      .replace("https://bsky.app/profile/", "")
-      .replace("https://main.bsky.dev/profile/", "")
-      .replace("/post/", "/app.bsky.feed.post/");
-    let did = "";
-    let pds = "";
-    try {
-      if (uri.startsWith("did:")) did = uri.split("/")[0];
-      else did = await resolveHandle(uri.split("/")[0]);
-      if (!did) throw Error;
-      pds = await getPDS(did);
-    } catch (err) {
-      setNotice("Could not resolve At-URI/DID/Handle");
-    }
-    pds = pds.replace("https://", "");
-    throw redirect(
-      `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
-    );
   });
 
   return (
@@ -380,7 +375,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </Show>
         </div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
-          {props.children}
+          <Show keyed when={params.pds}>
+            {props.children}
+          </Show>
         </div>
       </div>
     </div>
