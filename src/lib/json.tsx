@@ -11,11 +11,20 @@ const JSONString = ({ data }: { data: string }) => {
   return (
     <pre class="text-green-600 dark:text-green-400">
       {data.startsWith("at://") && data.split(" ").length === 1 ?
-        <A href={data.replace("at://", "/at/")}>{data}</A>
+        <A class="hover:underline" href={data.replace("at://", "/at/")}>
+          {data}
+        </A>
       : data.startsWith("did:") ?
-        <A href={`/at/${data}`}>{data}</A>
+        <A class="hover:underline" href={`/at/${data}`}>
+          {data}
+        </A>
       : URL.canParse(data) ?
-        <a href={data} target="_blank" rel="noopener noreferer">
+        <a
+          class="hover:underline"
+          href={data}
+          target="_blank"
+          rel="noopener noreferer"
+        >
           {data}
         </a>
       : data}
