@@ -308,6 +308,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           juliet
         </a>
       </div>
+      <Show when={params.rkey}>
+        <div class="mb-2 text-sm">clicking a key copies the value</div>
+      </Show>
       <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
         <form
           class="flex flex-col items-center gap-y-1"
