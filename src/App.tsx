@@ -81,17 +81,19 @@ const RecordView: Component = () => {
   const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
 
   onMount(() => {
-    console.log("test");
-    if (params.pds === "at") redirectAtURI(params);
-    rpc = new XRPC({
-      handler: new CredentialManager({ service: `https://${params.pds}` }),
-    });
-    fetchRecord(params.rkey);
+    setNotice("Loading...");
+    if (params.pds === "at") {
+      redirectAtURI(params);
+    } else {
+      rpc = new XRPC({
+        handler: new CredentialManager({ service: `https://${params.pds}` }),
+      });
+      fetchRecord(params.rkey);
+    }
   });
 
   const fetchRecord = async (rkey: string) => {
     try {
-      setNotice("Loading...");
       const res = await rpc.get("com.atproto.repo.getRecord", {
         params: {
           repo: params.did,
@@ -122,15 +124,18 @@ const CollectionView: Component = () => {
     createSignal<ComAtprotoRepoListRecords.Record[]>();
 
   onMount(() => {
-    if (params.pds === "at") redirectAtURI(params);
-    rpc = new XRPC({
-      handler: new CredentialManager({ service: `https://${params.pds}` }),
-    });
-    fetchListRecords(params.collection);
+    setNotice("Loading...");
+    if (params.pds === "at") {
+      redirectAtURI(params);
+    } else {
+      rpc = new XRPC({
+        handler: new CredentialManager({ service: `https://${params.pds}` }),
+      });
+      fetchListRecords(params.collection);
+    }
   });
 
   const fetchListRecords = async (collection: string) => {
-    setNotice("Loading...");
     const res = await rpc.get("com.atproto.repo.listRecords", {
       params: {
         repo: params.did,
@@ -177,15 +182,18 @@ const RepoView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
-    if (params.pds === "at") redirectAtURI(params);
-    rpc = new XRPC({
-      handler: new CredentialManager({ service: `https://${params.pds}` }),
-    });
-    const res = await rpc.get("com.atproto.repo.describeRepo", {
-      params: { repo: params.did },
-    });
-    setNotice("");
-    setRepo(res.data);
+    if (params.pds === "at") {
+      redirectAtURI(params);
+    } else {
+      rpc = new XRPC({
+        handler: new CredentialManager({ service: `https://${params.pds}` }),
+      });
+      const res = await rpc.get("com.atproto.repo.describeRepo", {
+        params: { repo: params.did },
+      });
+      setNotice("");
+      setRepo(res.data);
+    }
   });
 
   return (
@@ -217,6 +225,7 @@ const PdsView: Component = () => {
   const [repos, setRepos] = createSignal<ComAtprotoSyncListRepos.Repo[]>();
 
   onMount(() => {
+    setNotice("Loading...");
     setNotice("");
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
@@ -226,7 +235,6 @@ const PdsView: Component = () => {
 
   const fetchRepos = async () => {
     try {
-      setNotice("Loading...");
       const res = await rpc.get("com.atproto.sync.listRepos", {
         params: { limit: 1000, cursor: cursorRepo() },
       });
