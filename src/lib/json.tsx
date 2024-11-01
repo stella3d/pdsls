@@ -48,7 +48,16 @@ const JSONObject = ({
         .toSorted()
         .map(([key, value], index) => (
           <div classList={{ "flex gap-2": true, "mt-4": index === 0 }}>
-            <span class="text-yellow-700 dark:text-yellow-500">{key}:</span>
+            <span
+              class="cursor-pointer text-yellow-700 dark:text-yellow-500"
+              onclick={() =>
+                navigator.clipboard.writeText(
+                  JSON.stringify(value).replace(/^"(.+)"$/, "$1"),
+                )
+              }
+            >
+              {key}:
+            </span>
             <span>
               <JSONValue data={value} repo={repo} />
             </span>
