@@ -38,11 +38,9 @@ const RecordView: Component = () => {
   const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
 
   onMount(() => {
-    let pds = params.pds;
-    if (pds) {
-      if (!pds.startsWith("https://")) pds = `https://${pds}`;
-      rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
-    }
+    rpc = new XRPC({
+      handler: new CredentialManager({ service: `https://${params.pds}` }),
+    });
     fetchRecord(params.rkey);
   });
 
@@ -65,8 +63,20 @@ const RecordView: Component = () => {
 
   return (
     <div class="flex flex-col overflow-y-auto text-sm">
-      <span>uri: {record()?.uri}</span>
-      <span>cid: {record()?.cid}</span>
+      <span
+        class="cursor-pointer"
+        onclick={() => navigator.clipboard.writeText(record()!.uri)}
+      >
+        uri: {record()?.uri}
+      </span>
+      <span
+        class="cursor-pointer"
+        onclick={() => {
+          if (record()?.cid) navigator.clipboard.writeText(record()!.cid ?? "");
+        }}
+      >
+        cid: {record()?.cid}
+      </span>
       <span>value:</span>
       <pre class="ml-5">{JSON.stringify(record()?.value, null, 2)}</pre>
     </div>
@@ -80,9 +90,9 @@ const CollectionView: Component = () => {
     createSignal<ComAtprotoRepoListRecords.Record[]>();
 
   onMount(() => {
-    let pds = params.pds;
-    if (!pds.startsWith("https://")) pds = `https://${pds}`;
-    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    rpc = new XRPC({
+      handler: new CredentialManager({ service: `https://${params.pds}` }),
+    });
     fetchListRecords(params.collection);
   });
 
@@ -134,9 +144,9 @@ const RepoView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
-    let pds = params.pds;
-    if (!pds.startsWith("https://")) pds = `https://${pds}`;
-    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    rpc = new XRPC({
+      handler: new CredentialManager({ service: `https://${params.pds}` }),
+    });
     const res = await rpc.get("com.atproto.repo.describeRepo", {
       params: { repo: params.did },
     });
@@ -174,9 +184,9 @@ const PdsView: Component = () => {
 
   onMount(() => {
     setNotice("");
-    let pds = params.pds;
-    if (!pds.startsWith("https://")) pds = `https://${pds}`;
-    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    rpc = new XRPC({
+      handler: new CredentialManager({ service: `https://${params.pds}` }),
+    });
     fetchRepos();
   });
 
@@ -222,9 +232,8 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
 
   onMount(async () => {
     setNotice("");
-    let pds = params.pds;
-    if (pds) {
-      if (pds === "at") {
+    if (params.pds) {
+      if (params.pds === "at") {
         const process = useAction(processInput);
         const formData = new FormData();
         formData.append(
@@ -233,8 +242,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
         );
         process(formData);
       }
-      if (!pds.startsWith("https://")) pds = `https://${pds}`;
-      rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+      rpc = new XRPC({
+        handler: new CredentialManager({ service: `https://${params.pds}` }),
+      });
     }
     const res = await fetch(
       "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
