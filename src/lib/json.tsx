@@ -9,18 +9,18 @@ interface AtBlob {
 
 const JSONString = ({ data }: { data: string }) => {
   return (
-    <pre class="text-green-600 dark:text-green-400">
+    <pre class="text-emerald-600 dark:text-emerald-400">
       {data.startsWith("at://") && data.split(" ").length === 1 ?
-        <A class="hover:underline" href={data.replace("at://", "/at/")}>
+        <A class="underline" href={data.replace("at://", "/at/")}>
           {data}
         </A>
       : data.startsWith("did:") ?
-        <A class="hover:underline" href={`/at/${data}`}>
+        <A class="underline" href={`/at/${data}`}>
           {data}
         </A>
       : URL.canParse(data) ?
         <a
-          class="hover:underline"
+          class="underline"
           href={data}
           target="_blank"
           rel="noopener noreferer"
@@ -57,7 +57,7 @@ const JSONObject = ({
         .toSorted()
         .map(([key, value], index) => (
           <div classList={{ "flex gap-2": true, "mt-4": index === 0 }}>
-            <span class="text-yellow-700 dark:text-yellow-500">
+            <span class="text-yellow-700 dark:text-amber-400">
               <span
                 class="cursor-pointer"
                 onclick={() =>
