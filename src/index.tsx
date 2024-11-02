@@ -24,15 +24,15 @@ render(
         )}
       />
       <Route
-        path="/:pds/:did"
+        path="/:pds/:repo"
         component={() => (
-          <Show keyed when={useParams().did}>
+          <Show keyed when={useParams().repo}>
             <RepoView />
           </Show>
         )}
       />
       <Route
-        path="/:pds/:did/:collection"
+        path="/:pds/:repo/:collection"
         component={() => (
           <Show keyed when={useParams().collection}>
             <CollectionView />
@@ -40,7 +40,7 @@ render(
         )}
       />
       <Route
-        path="/:pds/:did/:collection/:rkey"
+        path="/:pds/:repo/:collection/:rkey"
         component={() => (
           <Show keyed when={useParams().rkey}>
             <RecordView />

@@ -13,7 +13,6 @@ import {
   Params,
   redirect,
   RouteSectionProps,
-  useAction,
   useParams,
 } from "@solidjs/router";
 import { getPDS, resolveHandle } from "./utils/api.js";
@@ -34,6 +33,7 @@ export const theme = createProp<Theme>(
 
 let rpc: XRPC;
 const [notice, setNotice] = createSignal("");
+const [pds, setPDS] = createSignal<string>();
 
 const processInput = action(async (formData: FormData) => {
   const input = formData.get("input")?.toString();
@@ -61,42 +61,40 @@ const processInput = action(async (formData: FormData) => {
     setNotice("Could not resolve At-URI/DID/Handle");
   }
   pds = pds.replace("https://", "");
-  throw redirect(
-    `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
-  );
+  throw redirect(`/${pds}/${uri}`);
 });
 
-const redirectAtURI = (params: Params) => {
-  const process = useAction(processInput);
-  const formData = new FormData();
-  formData.append(
-    "input",
-    `${params.did}${params.collection ? "/" + params.collection : ""}${params.rkey ? "/" + params.rkey : ""}`,
-  );
-  process(formData);
+const resolvePDS = async (params: Params) => {
+  try {
+    let did;
+    if (params.repo.startsWith("did:")) did = params.repo;
+    else did = await resolveHandle(params.repo);
+    if (!did) throw Error;
+    const pds = await getPDS(did);
+    setPDS(pds.replace("https://", ""));
+    return pds;
+  } catch (err) {
+    setNotice("Could not resolve PDS");
+  }
 };
 
 const RecordView: Component = () => {
   const params = useParams();
   const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
 
-  onMount(() => {
+  onMount(async () => {
     setNotice("Loading...");
-    if (params.pds === "at") {
-      redirectAtURI(params);
-    } else {
-      rpc = new XRPC({
-        handler: new CredentialManager({ service: `https://${params.pds}` }),
-      });
-      fetchRecord(params.rkey);
-    }
+    let pds = `https://${params.pds}`;
+    if (params.pds === "at") pds = await resolvePDS(params);
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    fetchRecord(params.rkey);
   });
 
   const fetchRecord = async (rkey: string) => {
     try {
       const res = await rpc.get("com.atproto.repo.getRecord", {
         params: {
-          repo: params.did,
+          repo: params.repo,
           collection: params.collection,
           rkey: rkey,
         },
@@ -111,7 +109,7 @@ const RecordView: Component = () => {
   return (
     <Show when={record()}>
       <div class="overflow-y-auto">
-        <JSONValue data={record() as any} repo={params.did} />
+        <JSONValue data={record() as any} repo={record()!.uri.split("/")[2]} />
       </div>
     </Show>
   );
@@ -123,22 +121,18 @@ const CollectionView: Component = () => {
   const [records, setRecords] =
     createSignal<ComAtprotoRepoListRecords.Record[]>();
 
-  onMount(() => {
+  onMount(async () => {
     setNotice("Loading...");
-    if (params.pds === "at") {
-      redirectAtURI(params);
-    } else {
-      rpc = new XRPC({
-        handler: new CredentialManager({ service: `https://${params.pds}` }),
-      });
-      fetchListRecords(params.collection);
-    }
+    let pds = `https://${params.pds}`;
+    if (params.pds === "at") pds = await resolvePDS(params);
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    fetchListRecords(params.collection);
   });
 
   const fetchListRecords = async (collection: string) => {
     const res = await rpc.get("com.atproto.repo.listRecords", {
       params: {
-        repo: params.did,
+        repo: params.repo,
         collection: collection,
         limit: 100,
         cursor: cursorRecord(),
@@ -182,18 +176,14 @@ const RepoView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
-    if (params.pds === "at") {
-      redirectAtURI(params);
-    } else {
-      rpc = new XRPC({
-        handler: new CredentialManager({ service: `https://${params.pds}` }),
-      });
-      const res = await rpc.get("com.atproto.repo.describeRepo", {
-        params: { repo: params.did },
-      });
-      setNotice("");
-      setRepo(res.data);
-    }
+    let pds = `https://${params.pds}`;
+    if (params.pds === "at") pds = await resolvePDS(params);
+    rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
+    const res = await rpc.get("com.atproto.repo.describeRepo", {
+      params: { repo: params.repo },
+    });
+    setNotice("");
+    setRepo(res.data);
   });
 
   return (
@@ -226,7 +216,7 @@ const PdsView: Component = () => {
 
   onMount(() => {
     setNotice("Loading...");
-    setNotice("");
+    setPDS(params.pds);
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
     });
@@ -250,7 +240,10 @@ const PdsView: Component = () => {
     <>
       <For each={repos()}>
         {(repo) => (
-          <A href={`${repo.did}`} class="text-lightblue-500 hover:underline">
+          <A
+            href={`/at/${repo.did}`}
+            class="text-lightblue-500 hover:underline"
+          >
             {repo.did}
           </A>
         )}
@@ -274,12 +267,6 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
 
   onMount(async () => {
     setNotice("");
-    if (params.pds) {
-      if (params.pds === "at") redirectAtURI(params);
-      rpc = new XRPC({
-        handler: new CredentialManager({ service: `https://${params.pds}` }),
-      });
-    }
     const res = await fetch(
       "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
     );
@@ -352,30 +339,30 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
         </form>
         <div class="m-2 min-h-6">{notice()}</div>
         <div class="mb-3 font-mono">
-          <Show when={params.pds}>
+          <Show when={pds()}>
             <A
               end
-              href={params.pds}
+              href={pds()!}
               inactiveClass="text-lightblue-500 hover:underline"
             >
-              {params.pds}
+              {pds()}
             </A>
           </Show>
-          <Show when={params.did}>
+          <Show when={params.repo}>
             <span>{" / "}</span>
             <A
               end
-              href={`${params.pds}/${params.did}`}
+              href={`at/${params.repo}`}
               inactiveClass="text-lightblue-500 hover:underline"
             >
-              {params.did}
+              {params.repo}
             </A>
           </Show>
           <Show when={params.collection}>
             <span>{" / "}</span>
             <A
               end
-              href={`${params.pds}/${params.did}/${params.collection}`}
+              href={`at/${params.repo}/${params.collection}`}
               inactiveClass="text-lightblue-500 hover:underline"
             >
               {params.collection}
