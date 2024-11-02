@@ -86,6 +86,7 @@ const RecordView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
+    setPDS(params.pds);
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
@@ -125,6 +126,7 @@ const CollectionView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
+    setPDS(params.pds);
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
@@ -178,6 +180,7 @@ const RepoView: Component = () => {
 
   onMount(async () => {
     setNotice("Loading...");
+    setPDS(params.pds);
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
