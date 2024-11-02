@@ -191,7 +191,7 @@ const RepoView: Component = () => {
 
   return (
     <>
-      <div class="flex w-fit flex-col self-center">
+      <div class="mb-4 flex w-fit flex-col self-center">
         <For each={repo()?.collections}>
           {(collection) => (
             <A
@@ -203,11 +203,11 @@ const RepoView: Component = () => {
           )}
         </For>
       </div>
-      <div class="mt-4">
-        <pre class="overflow-y-auto text-sm">
-          {JSON.stringify(repo()?.didDoc, null, 2)}
-        </pre>
-      </div>
+      <Show when={repo()}>
+        <div class="overflow-y-auto text-sm">
+          <JSONValue data={repo()?.didDoc as any} repo={repo()!.did} />
+        </div>
+      </Show>
     </>
   );
 };
