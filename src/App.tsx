@@ -51,18 +51,16 @@ const processInput = action(async (formData: FormData) => {
     .replace("https://main.bsky.dev/profile/", "")
     .replace("/post/", "/app.bsky.feed.post/");
   let did = "";
-  let pds = "";
   try {
     if (uri.startsWith("did:")) did = uri.split("/")[0];
     else did = await resolveHandle(uri.split("/")[0]);
     if (!did) throw Error;
-    pds = await getPDS(did);
+    setPDS(await getPDS(did));
   } catch (err) {
     setNotice("Could not resolve At-URI/DID/Handle");
   }
-  pds = pds.replace("https://", "");
   throw redirect(
-    `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
+    `/at/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
   );
 });
 
