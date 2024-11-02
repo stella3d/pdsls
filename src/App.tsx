@@ -61,7 +61,9 @@ const processInput = action(async (formData: FormData) => {
     setNotice("Could not resolve At-URI/DID/Handle");
   }
   pds = pds.replace("https://", "");
-  throw redirect(`/${pds}/${uri}`);
+  throw redirect(
+    `/${pds}/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
+  );
 });
 
 const resolvePDS = async (params: Params) => {
