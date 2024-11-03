@@ -183,11 +183,15 @@ const RepoView: Component = () => {
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
-    const res = await rpc.get("com.atproto.repo.describeRepo", {
-      params: { repo: params.repo },
-    });
-    setNotice("");
-    setRepo(res.data);
+    try {
+      const res = await rpc.get("com.atproto.repo.describeRepo", {
+        params: { repo: params.repo },
+      });
+      setNotice("");
+      setRepo(res.data);
+    } catch (err: any) {
+      setNotice(err.message);
+    }
   });
 
   return (
