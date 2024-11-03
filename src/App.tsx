@@ -252,11 +252,14 @@ const PdsView: Component = () => {
           <A
             href={`/at/${repo.did}`}
             classList={{
-              "hover:underline": true,
+              "hover:underline relative": true,
               "text-lightblue-500": repo.active,
               "text-gray-300 dark:text-gray-600": !repo.active,
             }}
           >
+            <span class="absolute -left-5 font-sans">
+              {!repo.active ? "🪦" : ""}
+            </span>
             {repo.did}
           </A>
         )}
