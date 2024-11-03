@@ -1,4 +1,6 @@
-const getPDS = async (did: string) => {
+import { query } from "@solidjs/router";
+
+const getPDS = query(async (did: string) => {
   const res = await fetch(
     did.startsWith("did:web") ?
       `https://${did.split(":")[2]}/.well-known/did.json`
@@ -10,15 +12,15 @@ const getPDS = async (did: string) => {
       if (service.id === "#atproto_pds") return service.serviceEndpoint;
     }
   });
-};
+}, "getPDS");
 
-const resolveHandle = async (handle: string) => {
+const resolveHandle = query(async (handle: string) => {
   const res = await fetch(
     `https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=` +
       handle,
   );
 
   return res.json().then((json) => json.did);
-};
+}, "resolveHandle");
 
 export { getPDS, resolveHandle };
