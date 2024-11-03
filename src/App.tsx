@@ -379,9 +379,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </Show>
         </div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
-          <Show keyed when={params.pds}>
-            {props.children}
-          </Show>
+          {props.children}
         </div>
       </div>
     </div>
