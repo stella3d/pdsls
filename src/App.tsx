@@ -17,6 +17,7 @@ import {
 } from "@solidjs/router";
 import { getPDS, resolveHandle } from "./utils/api.js";
 import { JSONValue } from "./lib/json.jsx";
+import { AiFillGithub, Bluesky, TbMoonStar, TbSun } from "./lib/svg.jsx";
 
 type Theme = "light" | "dark";
 export const theme = createProp<Theme>(
@@ -109,7 +110,7 @@ const RecordView: Component = () => {
 
   return (
     <Show when={record()}>
-      <div class="overflow-y-auto">
+      <div class="overflow-y-auto p-5">
         <JSONValue data={record() as any} repo={record()!.uri.split("/")[2]} />
       </div>
     </Show>
@@ -204,7 +205,7 @@ const RepoView: Component = () => {
         </For>
       </div>
       <Show when={repo()}>
-        <div class="overflow-y-auto text-sm">
+        <div class="overflow-y-auto p-5 text-sm">
           <JSONValue data={repo()?.didDoc as any} repo={repo()!.did} />
         </div>
       </Show>
@@ -279,7 +280,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
 
   return (
     <div class="m-5 flex flex-col items-center dark:text-white">
-      <div class="flex w-[20rem]">
+      <div class="mb-2 flex w-[20rem] items-center">
         <div class="basis-1/3">
           <span
             class="cursor-pointer"
@@ -287,28 +288,26 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
               theme.set(theme.get() === "light" ? "dark" : "light")
             }
           >
-            {theme.get()}
+            {theme.get() === "light" ?
+              <TbSun class="size-6" />
+            : <TbMoonStar class="size-6" />}
           </span>
         </div>
-        <div class="mb-2 basis-1/3 text-center font-mono text-xl font-bold">
+        <div class="basis-1/3 text-center font-mono text-xl font-bold">
           <a href="https://pdsls.dev/">PDSls</a>
         </div>
+        <div class="justify-right flex basis-1/3 gap-x-2">
+          <a
+            href="https://bsky.app/profile/did:plc:b3pn34agqqchkaf75v7h43dk"
+            target="_blank"
+          >
+            <Bluesky class="size-6" />
+          </a>
+          <a href="https://github.com/notjuliet/pdsls" target="_blank">
+            <AiFillGithub class="size-6" />
+          </a>
+        </div>
       </div>
-      <div class="mb-2 text-sm">
-        <a class="text-lightblue-500" href="https://github.com/notjuliet/pdsls">
-          source code
-        </a>{" "}
-        - made by{" "}
-        <a
-          class="text-lightblue-500"
-          href="https://bsky.app/profile/did:plc:b3pn34agqqchkaf75v7h43dk"
-        >
-          juliet
-        </a>
-      </div>
-      <Show when={params.rkey}>
-        <div class="mb-2 text-sm">clicking a key copies the value</div>
-      </Show>
       <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
         <form
           class="flex flex-col items-center gap-y-1"

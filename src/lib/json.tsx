@@ -1,5 +1,7 @@
 import { A } from "@solidjs/router";
 import VideoPlayer from "./video-player";
+import { BsClipboard, BsClipboardCheck } from "./svg";
+import { createSignal, Show } from "solid-js";
 
 interface AtBlob {
   $type: string;
@@ -51,24 +53,31 @@ const JSONObject = ({
   data: { [x: string]: JSONType };
   repo: string;
 }) => {
+  const [clip, setClip] = createSignal(false);
   const rawObj = (
     <>
       {Object.entries(data)
         .toSorted()
         .map(([key, value], index) => (
           <div classList={{ "flex gap-2": true, "mt-4": index === 0 }}>
-            <span class="text-yellow-700 dark:text-amber-400">
-              <span
-                class="cursor-pointer"
+            <div class="text-yellow-700 dark:text-amber-400">
+              <div
+                class="group relative flex size-fit cursor-pointer items-center"
+                onmouseover={() => setClip(false)}
                 onclick={() =>
-                  navigator.clipboard.writeText(
-                    JSON.stringify(value).replace(/^"(.+)"$/, "$1"),
-                  )
+                  navigator.clipboard
+                    .writeText(JSON.stringify(value).replace(/^"(.+)"$/, "$1"))
+                    .then(() => setClip(true))
                 }
               >
+                <span class="absolute -left-5 size-4">
+                  {clip() ?
+                    <BsClipboardCheck class="hidden size-4 group-hover:block" />
+                  : <BsClipboard class="hidden size-4 group-hover:block" />}
+                </span>
                 {key}:
-              </span>
-            </span>
+              </div>
+            </div>
             <span>
               <JSONValue data={value} repo={repo} />
             </span>
