@@ -276,11 +276,11 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
 
   onMount(async () => {
     setNotice("");
-    const res = await fetch(
-      "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
-    );
-    const json = await res.json();
-    setPdsList(Object.keys(json.pdses));
+    const pdses: Record<string, { errorAt?: number; version?: string }> =
+      await fetch(
+        "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
+      ).then((res) => res.json().then((json) => json.pdses));
+    setPdsList(Object.keys(pdses).filter((key) => !pdses[key].errorAt));
   });
 
   return (
