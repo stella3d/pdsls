@@ -110,7 +110,7 @@ const RecordView: Component = () => {
 
   return (
     <Show when={record()}>
-      <div class="overflow-y-auto p-5">
+      <div class="overflow-y-auto p-4">
         <JSONValue data={record() as any} repo={record()!.uri.split("/")[2]} />
       </div>
     </Show>
@@ -205,7 +205,7 @@ const RepoView: Component = () => {
         </For>
       </div>
       <Show when={repo()}>
-        <div class="overflow-y-auto p-5 text-sm">
+        <div class="overflow-y-auto p-4 text-sm">
           <JSONValue data={repo()?.didDoc as any} repo={repo()!.did} />
         </div>
       </Show>
