@@ -13,6 +13,7 @@ import {
   Params,
   redirect,
   RouteSectionProps,
+  useLocation,
   useParams,
 } from "@solidjs/router";
 import { getPDS, resolveHandle } from "./utils/api.js";
@@ -379,7 +380,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </Show>
         </div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
-          {props.children}
+          <Show keyed when={useLocation().pathname}>
+            {props.children}
+          </Show>
         </div>
       </div>
     </div>
