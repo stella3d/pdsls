@@ -330,8 +330,8 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             <For each={pdsList()}>{(pds) => <option value={pds}></option>}</For>
           </datalist>
           <div class="w-full">
-            <label for="input" class="ml-0.5 text-left text-sm">
-              Enter PDS URL / At-URI / DID / Handle
+            <label for="input" class="text-sm">
+              PDS URL (https:// required) or AT URI (at:// optional)
             </label>
           </div>
           <div class="flex gap-x-2">
