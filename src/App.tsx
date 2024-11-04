@@ -166,7 +166,7 @@ const CollectionView: Component = () => {
         <button
           type="button"
           onclick={() => fetchListRecords(params.collection)}
-          class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+          class="dark:bg-dark-700 dark:hover:bg-dark-800 mt-1 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
         >
           Load More
         </button>
@@ -269,7 +269,7 @@ const PdsView: Component = () => {
         <button
           type="button"
           onclick={() => fetchRepos()}
-          class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+          class="dark:bg-dark-700 dark:hover:bg-dark-800 mt-1 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
         >
           Load More
         </button>
@@ -307,7 +307,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </span>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
-          <a href="https://pdsls.dev/">PDSls</a>
+          PDSls
         </div>
         <div class="justify-right flex basis-1/3 gap-x-2">
           <a
@@ -348,7 +348,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             />
             <button
               type="submit"
-              class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:text-white"
+              class="dark:bg-dark-700 dark:hover:bg-dark-800 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               Go
             </button>
