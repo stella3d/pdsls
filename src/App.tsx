@@ -39,6 +39,7 @@ const [pds, setPDS] = createSignal<string>();
 
 const processInput = action(async (formData: FormData) => {
   const input = formData.get("input")?.toString();
+  (document.getElementById("uriForm") as HTMLFormElement).reset();
   if (!input) return;
   if (
     !input.startsWith("https://bsky.app/") &&
@@ -323,6 +324,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
       <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
         <form
           class="flex flex-col items-center gap-y-1"
+          id="uriForm"
           method="post"
           action={processInput}
         >
