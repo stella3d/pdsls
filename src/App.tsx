@@ -351,8 +351,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </button>
           </div>
         </form>
-        <div class="m-2 min-h-6">{notice()}</div>
-        <div class="mb-3 font-mono">
+        <div class="mb-3 mt-4 font-mono">
           <Show when={pds()}>
             <A
               end
@@ -386,6 +385,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             <span>{" / " + params.rkey}</span>
           </Show>
         </div>
+        <div>{notice()}</div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
           <Show keyed when={useLocation().pathname}>
             {props.children}
