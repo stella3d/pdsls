@@ -342,6 +342,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
               list="pdsInput"
               id="input"
               name="input"
+              autofocus
               spellcheck={false}
               class="dark:bg-dark-100 rounded-lg border border-gray-400 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
