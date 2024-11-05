@@ -10,12 +10,13 @@ import {
   PdsView,
   RecordView,
   RepoView,
+  Home,
 } from "./App.tsx";
 
 render(
   () => (
     <Router root={Layout}>
-      <Route path="/" component={() => <></>} />
+      <Route path="/" component={Home} />
       <Route path="/:pds" component={PdsView} />
       <Route path="/:pds/:repo" component={RepoView} />
       <Route path="/:pds/:repo/:collection" component={CollectionView} />

@@ -279,6 +279,46 @@ const PdsView: Component = () => {
   );
 };
 
+const Home: Component = () => {
+  return (
+    <div class="flex flex-col break-words font-sans text-slate-800 dark:text-slate-200">
+      <div>
+        <span class="font-semibold text-orange-400">PDS URL</span> (https://
+        required):
+        <div>
+          <A href="/pds.bsky.mom" class="text-lightblue-500 hover:underline">
+            https://pds.bsky.mom
+          </A>
+        </div>
+      </div>
+      <div>
+        <span class="font-semibold text-orange-400">AT URI</span> (at://
+        optional, DID or handle alone also works):
+        <div>
+          <A
+            href="/at/did:plc:oisofpd7lj26yvgiivf3lxsi/app.bsky.feed.post/3l2zpbbhuvw2h"
+            class="text-lightblue-500 hover:underline"
+          >
+            at://did:plc:oisofpd7lj26yvgiivf3lxsi/app.bsky.feed.post/3l2zpbbhuvw2h
+          </A>
+        </div>
+      </div>
+      <div>
+        <span class="font-semibold text-orange-400">Bluesky Link</span> (posts
+        and profiles):
+        <div>
+          <A
+            href="/at/did:plc:ia76kvnndjutgedggx2ibrem/app.bsky.feed.post/3kenlltlvus2u"
+            class="text-lightblue-500 hover:underline"
+          >
+            https://bsky.app/profile/mary.my.id/post/3kenlltlvus2u
+          </A>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   const params = useParams();
   const [pdsList, setPdsList] = createSignal<any>();
@@ -413,4 +453,4 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   );
 };
 
-export { Layout, PdsView, RepoView, CollectionView, RecordView };
+export { Layout, Home, PdsView, RepoView, CollectionView, RecordView };
