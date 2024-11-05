@@ -15,13 +15,28 @@ import {
   useLocation,
   useParams,
 } from "@solidjs/router";
-import { getPDS, resolveHandle } from "./utils/api.js";
 import { JSONValue } from "./lib/json.jsx";
 import { AiFillGithub, Bluesky, TbMoonStar, TbSun } from "./lib/svg.jsx";
 
-let rpc: XRPC;
+let rpc = new XRPC({
+  handler: new CredentialManager({ service: "https://public.api.bsky.app" }),
+});
 const [notice, setNotice] = createSignal("");
 const [pds, setPDS] = createSignal<string>();
+
+const getPDS = query(async (did: string) => {
+  const res = await fetch(
+    did.startsWith("did:web") ?
+      `https://${did.split(":")[2]}/.well-known/did.json`
+    : "https://plc.directory/" + did,
+  );
+
+  return res.json().then((doc) => {
+    for (const service of doc.service) {
+      if (service.id === "#atproto_pds") return service.serviceEndpoint;
+    }
+  });
+}, "getPDS");
 
 const processInput = action(async (formData: FormData) => {
   const input = formData.get("input")?.toString();
@@ -41,8 +56,13 @@ const processInput = action(async (formData: FormData) => {
     .replace("/post/", "/app.bsky.feed.post/");
   let did = "";
   try {
-    if (uri.startsWith("did:")) did = uri.split("/")[0];
-    else did = await resolveHandle(uri.split("/")[0]);
+    did = uri.split("/")[0];
+    if (!uri.startsWith("did:")) {
+      const res = await rpc.get("com.atproto.identity.resolveHandle", {
+        params: { handle: uri.split("/")[0] },
+      });
+      did = res.data.did;
+    }
     if (!did) throw Error;
     setPDS(await getPDS(did));
   } catch (err) {
@@ -55,9 +75,13 @@ const processInput = action(async (formData: FormData) => {
 
 const resolvePDS = async (repo: string) => {
   try {
-    let did;
-    if (repo.startsWith("did:")) did = repo;
-    else did = await resolveHandle(repo);
+    let did = repo;
+    if (!repo.startsWith("did:")) {
+      const res = await rpc.get("com.atproto.identity.resolveHandle", {
+        params: { handle: repo },
+      });
+      did = res.data.did;
+    }
     if (!did) throw Error;
     const pds = await getPDS(did);
     setPDS(pds.replace("https://", ""));
