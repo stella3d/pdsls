@@ -56,37 +56,42 @@ const processInput = action(async (formData: FormData) => {
     .replace("/post/", "/app.bsky.feed.post/");
   let did = "";
   try {
-    did = uri.split("/")[0];
-    if (!uri.startsWith("did:")) {
-      const res = await rpc.get("com.atproto.identity.resolveHandle", {
-        params: { handle: uri.split("/")[0] },
-      });
-      did = res.data.did;
-    }
+    rpc = new XRPC({
+      handler: new CredentialManager({
+        service: "https://public.api.bsky.app",
+      }),
+    });
+    await resolvePDS(uri.split("/")[0]);
+    did =
+      !uri.startsWith("did:") ?
+        await resolveHandle(uri.split("/")[0])
+      : uri.split("/")[0];
     if (!did) throw Error;
-    setPDS(await getPDS(did));
-  } catch (err) {
+  } catch {
     setNotice("Could not resolve AT URI");
+    return;
   }
   throw redirect(
     `/at/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
   );
 });
 
+const resolveHandle = async (handle: string) => {
+  const res = await rpc.get("com.atproto.identity.resolveHandle", {
+    params: { handle: handle },
+  });
+  return res.data.did;
+};
+
 const resolvePDS = async (repo: string) => {
   try {
     let did = repo;
-    if (!repo.startsWith("did:")) {
-      const res = await rpc.get("com.atproto.identity.resolveHandle", {
-        params: { handle: repo },
-      });
-      did = res.data.did;
-    }
+    if (!repo.startsWith("did:")) did = await resolveHandle(repo);
     if (!did) throw Error;
     const pds = await getPDS(did);
     setPDS(pds.replace("https://", ""));
     return pds;
-  } catch (err) {
+  } catch {
     setNotice("Could not resolve PDS");
   }
 };
@@ -304,6 +309,7 @@ const PdsView: Component = () => {
 };
 
 const Home: Component = () => {
+  setNotice("");
   return (
     <div class="flex flex-col break-words font-sans">
       <div>
@@ -434,42 +440,44 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </button>
           </div>
         </form>
-        <div class="mb-3 mt-4 flex flex-wrap font-mono">
-          <Show when={pds() && params.pds}>
-            <A
-              end
-              href={pds()!}
-              inactiveClass="text-lightblue-500 hover:underline"
-            >
-              {pds()}
-            </A>
-          </Show>
-          <Show when={params.repo}>
-            <span class="mx-1.5">/</span>
-            <A
-              end
-              href={`at/${params.repo}`}
-              inactiveClass="text-lightblue-500 hover:underline"
-            >
-              {params.repo}
-            </A>
-          </Show>
-          <Show when={params.collection}>
-            <span class="mx-1.5">/</span>
-            <A
-              end
-              href={`at/${params.repo}/${params.collection}`}
-              inactiveClass="text-lightblue-500 hover:underline"
-            >
-              {params.collection}
-            </A>
-          </Show>
-          <Show when={params.rkey}>
-            <span class="mx-1.5">/</span>
-            {params.rkey}
-          </Show>
-        </div>
-        <div>{notice()}</div>
+        <Show when={params.pds}>
+          <div class="mb-3 mt-4 flex flex-wrap font-mono">
+            <Show when={pds() && params.pds}>
+              <A
+                end
+                href={pds()!}
+                inactiveClass="text-lightblue-500 hover:underline"
+              >
+                {pds()}
+              </A>
+            </Show>
+            <Show when={params.repo}>
+              <span class="mx-1.5">/</span>
+              <A
+                end
+                href={`at/${params.repo}`}
+                inactiveClass="text-lightblue-500 hover:underline"
+              >
+                {params.repo}
+              </A>
+            </Show>
+            <Show when={params.collection}>
+              <span class="mx-1.5">/</span>
+              <A
+                end
+                href={`at/${params.repo}/${params.collection}`}
+                inactiveClass="text-lightblue-500 hover:underline"
+              >
+                {params.collection}
+              </A>
+            </Show>
+            <Show when={params.rkey}>
+              <span class="mx-1.5">/</span>
+              {params.rkey}
+            </Show>
+          </div>
+        </Show>
+        <div class="my-1">{notice()}</div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
           <Show keyed when={useLocation().pathname}>
             {props.children}
