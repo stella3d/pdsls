@@ -323,7 +323,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </span>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
-          PDSls
+          <A href="/">PDSls</A>
         </div>
         <div class="justify-right flex basis-1/3 gap-x-2">
           <a
@@ -371,7 +371,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </div>
         </form>
         <div class="mb-3 mt-4 font-mono">
-          <Show when={pds()}>
+          <Show when={pds() && params.pds}>
             <A
               end
               href={pds()!}

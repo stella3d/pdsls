@@ -15,6 +15,7 @@ import {
 render(
   () => (
     <Router root={Layout}>
+      <Route path="/" component={() => <></>} />
       <Route path="/:pds" component={PdsView} />
       <Route path="/:pds/:repo" component={RepoView} />
       <Route path="/:pds/:repo/:collection" component={CollectionView} />
