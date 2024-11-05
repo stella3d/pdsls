@@ -305,7 +305,7 @@ const PdsView: Component = () => {
 
 const Home: Component = () => {
   return (
-    <div class="flex flex-col break-words font-sans text-slate-800 dark:text-slate-200">
+    <div class="flex flex-col break-words font-sans">
       <div>
         <span class="font-semibold text-orange-400">PDS URL</span> (https://
         required):
@@ -366,7 +366,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   });
 
   return (
-    <div class="m-5 flex flex-col items-center dark:text-white">
+    <div class="m-5 flex flex-col items-center text-slate-900 dark:text-slate-100">
       <div class="mb-2 flex w-[20rem] items-center">
         <div class="basis-1/3">
           <div
