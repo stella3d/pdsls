@@ -43,7 +43,7 @@ const JSONBoolean = ({ data }: { data: boolean }) => {
 };
 
 const JSONNull = () => {
-  return <pre>null</pre>;
+  return <pre class="text-gray-600 dark:text-gray-400">null</pre>;
 };
 
 const JSONObject = ({
@@ -60,7 +60,7 @@ const JSONObject = ({
         .toSorted()
         .map(([key, value], index) => (
           <div classList={{ "flex gap-2 mt-0.5": true, "mt-4": index === 0 }}>
-            <div class="text-yellow-700 dark:text-amber-400">
+            <div class="text-amber-600 dark:text-amber-400">
               <div
                 class="group relative flex size-fit cursor-pointer items-center"
                 onmouseover={() => setClip(false)}
