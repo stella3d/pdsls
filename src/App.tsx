@@ -101,11 +101,13 @@ const RecordView: Component = () => {
     }
   });
 
-  const getRecord = query((repo: string, collection: string, rkey: string) => {
-    return rpc.get("com.atproto.repo.getRecord", {
-      params: { repo: repo, collection: collection, rkey: rkey },
-    });
-  }, "getRecord");
+  const getRecord = query(
+    (repo: string, collection: string, rkey: string) =>
+      rpc.get("com.atproto.repo.getRecord", {
+        params: { repo: repo, collection: collection, rkey: rkey },
+      }),
+    "getRecord",
+  );
 
   return (
     <Show when={record()}>
@@ -142,16 +144,15 @@ const CollectionView: Component = () => {
   };
 
   const listRecords = query(
-    (collection: string, cursor: string | undefined) => {
-      return rpc.get("com.atproto.repo.listRecords", {
+    (collection: string, cursor: string | undefined) =>
+      rpc.get("com.atproto.repo.listRecords", {
         params: {
           repo: params.repo,
           collection: collection,
           limit: 100,
           cursor: cursor,
         },
-      });
-    },
+      }),
     "listRecords",
   );
 
@@ -199,11 +200,11 @@ const RepoView: Component = () => {
     }
   });
 
-  const describeRepo = query((repo: string) => {
-    return rpc.get("com.atproto.repo.describeRepo", {
-      params: { repo: repo },
-    });
-  }, "describeRepo");
+  const describeRepo = query(
+    (repo: string) =>
+      rpc.get("com.atproto.repo.describeRepo", { params: { repo: repo } }),
+    "describeRepo",
+  );
 
   return (
     <>
@@ -253,11 +254,13 @@ const PdsView: Component = () => {
     }
   };
 
-  const listRepos = query((cursor: string | undefined) => {
-    return rpc.get("com.atproto.sync.listRepos", {
-      params: { limit: 1000, cursor: cursor },
-    });
-  }, "listRepos");
+  const listRepos = query(
+    (cursor: string | undefined) =>
+      rpc.get("com.atproto.sync.listRepos", {
+        params: { limit: 1000, cursor: cursor },
+      }),
+    "listRepos",
+  );
 
   return (
     <>
