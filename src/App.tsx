@@ -6,7 +6,6 @@ import {
   ComAtprotoRepoListRecords,
   ComAtprotoSyncListRepos,
 } from "@atcute/client/lexicons";
-import createProp from "./utils/createProp.js";
 import {
   A,
   action,
@@ -20,19 +19,6 @@ import {
 import { getPDS, resolveHandle } from "./utils/api.js";
 import { JSONValue } from "./lib/json.jsx";
 import { AiFillGithub, Bluesky, TbMoonStar, TbSun } from "./lib/svg.jsx";
-
-type Theme = "light" | "dark";
-export const theme = createProp<Theme>(
-  localStorage?.theme || "light",
-  function (newState: Theme) {
-    if (newState === "dark") document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
-
-    localStorage.theme = newState;
-    this[1](newState);
-    return newState;
-  },
-);
 
 let rpc: XRPC;
 const [notice, setNotice] = createSignal("");
@@ -297,6 +283,15 @@ const PdsView: Component = () => {
 const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   const params = useParams();
   const [pdsList, setPdsList] = createSignal<any>();
+  const [theme, setTheme] = createSignal(
+    (
+      localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) ?
+      "dark"
+    : "light",
+  );
 
   onMount(async () => {
     setNotice("");
@@ -313,13 +308,17 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
         <div class="basis-1/3">
           <span
             class="cursor-pointer"
-            onclick={() =>
-              theme.set(theme.get() === "light" ? "dark" : "light")
-            }
+            onclick={() => {
+              setTheme(theme() === "light" ? "dark" : "light");
+              if (theme() === "dark")
+                document.documentElement.classList.add("dark");
+              else document.documentElement.classList.remove("dark");
+              localStorage.theme = theme();
+            }}
           >
-            {theme.get() === "light" ?
-              <TbSun class="size-6" />
-            : <TbMoonStar class="size-6" />}
+            {theme() === "dark" ?
+              <TbMoonStar class="size-6" />
+            : <TbSun class="size-6" />}
           </span>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
