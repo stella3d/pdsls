@@ -369,8 +369,8 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     <div class="m-5 flex flex-col items-center dark:text-white">
       <div class="mb-2 flex w-[20rem] items-center">
         <div class="basis-1/3">
-          <span
-            class="cursor-pointer"
+          <div
+            class="w-fit cursor-pointer"
             onclick={() => {
               setTheme(theme() === "light" ? "dark" : "light");
               if (theme() === "dark")
@@ -382,7 +382,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             {theme() === "dark" ?
               <TbMoonStar class="size-6" />
             : <TbSun class="size-6" />}
-          </span>
+          </div>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
           <A href="/" class="hover:underline">
