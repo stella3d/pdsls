@@ -11,6 +11,7 @@ import {
   A,
   action,
   Params,
+  query,
   redirect,
   RouteSectionProps,
   useLocation,
@@ -91,24 +92,20 @@ const RecordView: Component = () => {
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
-    fetchRecord(params.rkey);
-  });
-
-  const fetchRecord = async (rkey: string) => {
     try {
-      const res = await rpc.get("com.atproto.repo.getRecord", {
-        params: {
-          repo: params.repo,
-          collection: params.collection,
-          rkey: rkey,
-        },
-      });
+      const res = await getRecord(params.repo, params.collection, params.rkey);
       setRecord(res.data);
       setNotice("");
     } catch (err: any) {
       setNotice(err.message);
     }
-  };
+  });
+
+  const getRecord = query((repo: string, collection: string, rkey: string) => {
+    return rpc.get("com.atproto.repo.getRecord", {
+      params: { repo: repo, collection: collection, rkey: rkey },
+    });
+  }, "getRecord");
 
   return (
     <Show when={record()}>
@@ -131,24 +128,32 @@ const CollectionView: Component = () => {
     let pds = `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
-    fetchListRecords(params.collection);
+    await fetchRecords();
+    setNotice("");
   });
 
-  const fetchListRecords = async (collection: string) => {
-    const res = await rpc.get("com.atproto.repo.listRecords", {
-      params: {
-        repo: params.repo,
-        collection: collection,
-        limit: 100,
-        cursor: cursorRecord(),
-      },
-    });
+  const fetchRecords = async () => {
+    const res = await listRecords(params.collection, cursorRecord());
     setCursorRecord(
       res.data.records.length < 100 ? undefined : res.data.cursor,
     );
-    setRecords(records()?.concat(res.data.records) ?? res.data.records),
-      setNotice("");
+    setRecords(records()?.concat(res.data.records) ?? res.data.records);
+    setNotice("");
   };
+
+  const listRecords = query(
+    (collection: string, cursor: string | undefined) => {
+      return rpc.get("com.atproto.repo.listRecords", {
+        params: {
+          repo: params.repo,
+          collection: collection,
+          limit: 100,
+          cursor: cursor,
+        },
+      });
+    },
+    "listRecords",
+  );
 
   return (
     <div class="flex flex-col">
@@ -165,7 +170,7 @@ const CollectionView: Component = () => {
       <Show when={cursorRecord()}>
         <button
           type="button"
-          onclick={() => fetchListRecords(params.collection)}
+          onclick={() => fetchRecords()}
           class="dark:bg-dark-700 dark:hover:bg-dark-800 mt-1 rounded-lg border border-gray-400 bg-white px-2.5 py-1.5 font-sans text-sm font-bold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
         >
           Load More
@@ -186,15 +191,19 @@ const RepoView: Component = () => {
     if (params.pds === "at") pds = await resolvePDS(params);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
-      const res = await rpc.get("com.atproto.repo.describeRepo", {
-        params: { repo: params.repo },
-      });
+      const res = await describeRepo(params.repo);
       setNotice("");
       setRepo(res.data);
     } catch (err: any) {
       setNotice(err.message);
     }
   });
+
+  const describeRepo = query((repo: string) => {
+    return rpc.get("com.atproto.repo.describeRepo", {
+      params: { repo: repo },
+    });
+  }, "describeRepo");
 
   return (
     <>
@@ -224,20 +233,18 @@ const PdsView: Component = () => {
   const [cursorRepo, setCursorRepo] = createSignal<string>();
   const [repos, setRepos] = createSignal<ComAtprotoSyncListRepos.Repo[]>();
 
-  onMount(() => {
+  onMount(async () => {
     setNotice("Loading...");
     setPDS(params.pds);
     rpc = new XRPC({
       handler: new CredentialManager({ service: `https://${params.pds}` }),
     });
-    fetchRepos();
+    await fetchRepos();
   });
 
   const fetchRepos = async () => {
     try {
-      const res = await rpc.get("com.atproto.sync.listRepos", {
-        params: { limit: 1000, cursor: cursorRepo() },
-      });
+      const res = await listRepos(cursorRepo());
       setCursorRepo(res.data.repos.length < 1000 ? undefined : res.data.cursor);
       setRepos(repos()?.concat(res.data.repos) ?? res.data.repos);
       setNotice("");
@@ -245,6 +252,12 @@ const PdsView: Component = () => {
       setNotice(err.message);
     }
   };
+
+  const listRepos = query((cursor: string | undefined) => {
+    return rpc.get("com.atproto.sync.listRepos", {
+      params: { limit: 1000, cursor: cursor },
+    });
+  }, "listRepos");
 
   return (
     <>
