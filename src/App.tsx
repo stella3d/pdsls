@@ -193,7 +193,7 @@ const RepoView: Component = () => {
 
   return (
     <>
-      <div class="mb-4 flex w-fit flex-col self-center">
+      <div class="flex w-fit flex-col self-center">
         <For each={repo()?.collections}>
           {(collection) => (
             <A
