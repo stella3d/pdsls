@@ -361,7 +361,9 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </span>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
-          <A href="/">PDSls</A>
+          <A href="/" class="hover:underline">
+            PDSls
+          </A>
         </div>
         <div class="justify-right flex basis-1/3 gap-x-2">
           <a
@@ -387,7 +389,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </datalist>
           <div class="w-full">
             <label for="input" class="ml-0.5 text-sm">
-              PDS URL or AT URI (at:// optional)
+              PDS URL or AT URI
             </label>
           </div>
           <div class="flex gap-x-2">
