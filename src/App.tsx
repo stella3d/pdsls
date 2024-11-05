@@ -410,7 +410,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </button>
           </div>
         </form>
-        <div class="mb-3 mt-4 font-mono">
+        <div class="mb-3 mt-4 flex flex-wrap font-mono">
           <Show when={pds() && params.pds}>
             <A
               end
@@ -421,7 +421,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </A>
           </Show>
           <Show when={params.repo}>
-            <span>{" / "}</span>
+            <span class="mx-1.5">/</span>
             <A
               end
               href={`at/${params.repo}`}
@@ -431,7 +431,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </A>
           </Show>
           <Show when={params.collection}>
-            <span>{" / "}</span>
+            <span class="mx-1.5">/</span>
             <A
               end
               href={`at/${params.repo}/${params.collection}`}
@@ -441,7 +441,8 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </A>
           </Show>
           <Show when={params.rkey}>
-            <span>{" / " + params.rkey}</span>
+            <span class="mx-1.5">/</span>
+            {params.rkey}
           </Show>
         </div>
         <div>{notice()}</div>
