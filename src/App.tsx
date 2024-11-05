@@ -9,7 +9,6 @@ import {
 import {
   A,
   action,
-  Params,
   query,
   redirect,
   RouteSectionProps,
@@ -47,18 +46,18 @@ const processInput = action(async (formData: FormData) => {
     if (!did) throw Error;
     setPDS(await getPDS(did));
   } catch (err) {
-    setNotice("Could not resolve At-URI/DID/Handle");
+    setNotice("Could not resolve AT URI");
   }
   throw redirect(
     `/at/${did}${uri.split("/").length > 1 ? "/" + uri.split("/").slice(1).join("/") : ""}`,
   );
 });
 
-const resolvePDS = async (params: Params) => {
+const resolvePDS = async (repo: string) => {
   try {
     let did;
-    if (params.repo.startsWith("did:")) did = params.repo;
-    else did = await resolveHandle(params.repo);
+    if (repo.startsWith("did:")) did = repo;
+    else did = await resolveHandle(repo);
     if (!did) throw Error;
     const pds = await getPDS(did);
     setPDS(pds.replace("https://", ""));
@@ -76,7 +75,7 @@ const RecordView: Component = () => {
     setNotice("Loading...");
     setPDS(params.pds);
     let pds = `https://${params.pds}`;
-    if (params.pds === "at") pds = await resolvePDS(params);
+    if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
       const res = await getRecord(params.repo, params.collection, params.rkey);
@@ -114,7 +113,7 @@ const CollectionView: Component = () => {
     setNotice("Loading...");
     setPDS(params.pds);
     let pds = `https://${params.pds}`;
-    if (params.pds === "at") pds = await resolvePDS(params);
+    if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     await fetchRecords();
     setNotice("");
@@ -175,7 +174,7 @@ const RepoView: Component = () => {
     setNotice("Loading...");
     setPDS(params.pds);
     let pds = `https://${params.pds}`;
-    if (params.pds === "at") pds = await resolvePDS(params);
+    if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
       const res = await describeRepo(params.repo);
@@ -287,7 +286,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     (
       localStorage.theme === "dark" ||
         (!("theme" in localStorage) &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches)
+          globalThis.matchMedia("(prefers-color-scheme: dark)").matches)
     ) ?
       "dark"
     : "light",
