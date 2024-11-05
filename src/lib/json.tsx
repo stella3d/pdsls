@@ -97,7 +97,7 @@ const JSONObject = ({
           class="contents"
         >
           <img
-            class="max-h-sm max-w-sm"
+            class="max-h-[16rem] max-w-[16rem]"
             src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${repo}/${blob.ref.$link}@jpeg`}
           />
         </a>
