@@ -59,7 +59,7 @@ const JSONObject = ({
       {Object.entries(data)
         .toSorted()
         .map(([key, value], index) => (
-          <div classList={{ "flex gap-2": true, "mt-4": index === 0 }}>
+          <div classList={{ "flex gap-2 mt-0.5": true, "mt-4": index === 0 }}>
             <div class="text-yellow-700 dark:text-amber-400">
               <div
                 class="group relative flex size-fit cursor-pointer items-center"
