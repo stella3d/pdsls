@@ -16,7 +16,14 @@ import {
   useParams,
 } from "@solidjs/router";
 import { JSONValue } from "./lib/json.jsx";
-import { AiFillGithub, Bluesky, TbMoonStar, TbSun } from "./lib/svg.jsx";
+import {
+  AiFillGithub,
+  Bluesky,
+  BsClipboard,
+  BsClipboardCheck,
+  TbMoonStar,
+  TbSun,
+} from "./lib/svg.jsx";
 
 let rpc = new XRPC({
   handler: new CredentialManager({ service: "https://public.api.bsky.app" }),
@@ -308,7 +315,7 @@ const PdsView: Component = () => {
 const Home: Component = () => {
   setNotice("");
   return (
-    <div class="flex flex-col break-words font-sans">
+    <div class="mt-3 flex flex-col break-words font-sans">
       <div>
         <span class="font-semibold text-orange-400">PDS URL</span> (https://
         required):
@@ -358,6 +365,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
       "dark"
     : "light",
   );
+  const [clip, setClip] = createSignal(false);
 
   onMount(async () => {
     setNotice("");
@@ -472,9 +480,24 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
               <span class="mx-1.5">/</span>
               {params.rkey}
             </Show>
+            <span
+              class="ml-1.5 flex cursor-pointer items-center"
+              onclick={() =>
+                navigator.clipboard.writeText(location.href).then(() => {
+                  setClip(true);
+                  setTimeout(() => {
+                    setClip(false);
+                  }, 3000);
+                })
+              }
+            >
+              {clip() ?
+                <BsClipboardCheck class="size-4" />
+              : <BsClipboard class="size-4" />}
+            </span>
           </div>
         </Show>
-        <div class="my-1">{notice()}</div>
+        <div>{notice()}</div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
           <Show keyed when={useLocation().pathname}>
             {props.children}

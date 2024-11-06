@@ -63,7 +63,7 @@ const JSONObject = ({
             <div class="text-amber-600 dark:text-amber-400">
               <div
                 class="group relative flex size-fit cursor-pointer items-center"
-                onmouseover={() => setClip(false)}
+                onmouseleave={() => setClip(false)}
                 onclick={() =>
                   navigator.clipboard
                     .writeText(JSON.stringify(value).replace(/^"(.+)"$/, "$1"))
