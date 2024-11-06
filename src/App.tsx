@@ -222,7 +222,7 @@ const RepoView: Component = () => {
 
   return (
     <>
-      <div class="flex w-fit flex-col self-center">
+      <div class="flex max-w-full flex-col self-center overflow-y-auto">
         <For each={repo()?.collections}>
           {(collection) => (
             <A
