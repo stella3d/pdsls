@@ -268,13 +268,10 @@ const PdsView: Component = () => {
     }
   };
 
-  const listRepos = query(
-    (cursor: string | undefined) =>
-      rpc.get("com.atproto.sync.listRepos", {
-        params: { limit: 1000, cursor: cursor },
-      }),
-    "listRepos",
-  );
+  const listRepos = (cursor: string | undefined) =>
+    rpc.get("com.atproto.sync.listRepos", {
+      params: { limit: 1000, cursor: cursor },
+    });
 
   return (
     <>
