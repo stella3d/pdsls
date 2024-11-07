@@ -355,7 +355,6 @@ const Home: Component = () => {
 
 const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   const params = useParams();
-  const [pdsList, setPdsList] = createSignal<any>();
   const [theme, setTheme] = createSignal(
     (
       localStorage.theme === "dark" ||
@@ -366,15 +365,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
     : "light",
   );
   const [clip, setClip] = createSignal(false);
-
-  onMount(async () => {
-    setNotice("");
-    const pdses: Record<string, { errorAt?: number; version?: string }> =
-      await fetch(
-        "https://raw.githubusercontent.com/mary-ext/atproto-scraping/refs/heads/trunk/state.json",
-      ).then((res) => res.json().then((json) => json.pdses));
-    setPdsList(Object.keys(pdses).filter((key) => !pdses[key].errorAt));
-  });
+  setNotice("");
 
   return (
     <div class="m-5 flex flex-col items-center text-slate-900 dark:text-slate-100">
@@ -419,9 +410,6 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           method="post"
           action={processInput}
         >
-          <datalist id="pdsInput">
-            <For each={pdsList()}>{(pds) => <option value={pds}></option>}</For>
-          </datalist>
           <div class="w-full">
             <label for="input" class="ml-0.5 text-sm">
               PDS URL or AT URI
@@ -430,7 +418,6 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           <div class="flex gap-x-2">
             <input
               type="text"
-              list="pdsInput"
               id="input"
               name="input"
               autofocus
