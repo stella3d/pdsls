@@ -484,7 +484,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
             </span>
           </div>
         </Show>
-        <div>{notice()}</div>
+        <div class="w-full break-words text-center">{notice()}</div>
         <div class="flex max-w-full flex-col space-y-1 font-mono">
           <Show keyed when={useLocation().pathname}>
             {props.children}
