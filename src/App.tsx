@@ -24,6 +24,7 @@ import {
   TbMoonStar,
   TbSun,
 } from "./lib/svg.jsx";
+import { authenticate_post } from "public-transport";
 
 let rpc = new XRPC({
   handler: new CredentialManager({ service: "https://public.api.bsky.app" }),
@@ -115,10 +116,13 @@ const RecordView: Component = () => {
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
       const res = await getRecord(params.repo, params.collection, params.rkey);
+      setNotice("Validating...");
+      await authenticate_post(res.data.uri, res.data.cid!, res.data.value);
       setRecord(res.data);
       setNotice("");
     } catch (err: any) {
-      setNotice(err.message);
+      if (err.message) setNotice(err.message);
+      else setNotice(`Invalid Record: ${err}`);
     }
   });
 
