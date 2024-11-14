@@ -117,8 +117,8 @@ const RecordView: Component = () => {
     try {
       const res = await getRecord(params.repo, params.collection, params.rkey);
       setNotice("Validating...");
-      await authenticate_post(res.data.uri, res.data.cid!, res.data.value);
       setRecord(res.data);
+      await authenticate_post(res.data.uri, res.data.cid!, res.data.value);
       setNotice("");
     } catch (err: any) {
       if (err.message) setNotice(err.message);
