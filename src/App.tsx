@@ -53,9 +53,11 @@ const processInput = action(async (formData: FormData) => {
   if (
     !input.startsWith("https://bsky.app/") &&
     !input.startsWith("https://main.bsky.dev/") &&
-    input.startsWith("https://")
+    (input.startsWith("https://") || input.startsWith("http://"))
   )
-    throw redirect(`/${input.replace("https://", "").replace("/", "")}`);
+    throw redirect(
+      `/${input.replace("https://", "").replace("http://", "").replace("/", "")}`,
+    );
 
   const uri = input
     .replace("at://", "")
@@ -97,7 +99,7 @@ const resolvePDS = async (repo: string) => {
     if (!repo.startsWith("did:")) did = await resolveHandle(repo);
     if (!did) throw Error;
     const pds = await getPDS(did);
-    setPDS(pds.replace("https://", ""));
+    setPDS(pds.replace("https://", "").replace("http://", ""));
     return pds;
   } catch {
     setNotice("Could not resolve PDS");
@@ -111,7 +113,10 @@ const RecordView: Component = () => {
   onMount(async () => {
     setNotice("Loading...");
     setPDS(params.pds);
-    let pds = `https://${params.pds}`;
+    let pds =
+      params.pds.startsWith("localhost") ?
+        `http://${params.pds}`
+      : `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
@@ -152,7 +157,10 @@ const CollectionView: Component = () => {
   onMount(async () => {
     setNotice("Loading...");
     setPDS(params.pds);
-    let pds = `https://${params.pds}`;
+    let pds =
+      params.pds.startsWith("localhost") ?
+        `http://${params.pds}`
+      : `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     await fetchRecords();
@@ -213,7 +221,10 @@ const RepoView: Component = () => {
   onMount(async () => {
     setNotice("Loading...");
     setPDS(params.pds);
-    let pds = `https://${params.pds}`;
+    let pds =
+      params.pds.startsWith("localhost") ?
+        `http://${params.pds}`
+      : `https://${params.pds}`;
     if (params.pds === "at") pds = await resolvePDS(params.repo);
     rpc = new XRPC({ handler: new CredentialManager({ service: pds }) });
     try {
@@ -262,8 +273,12 @@ const PdsView: Component = () => {
   onMount(async () => {
     setNotice("Loading...");
     setPDS(params.pds);
+    const pds =
+      params.pds.startsWith("localhost") ?
+        `http://${params.pds}`
+      : `https://${params.pds}`;
     rpc = new XRPC({
-      handler: new CredentialManager({ service: `https://${params.pds}` }),
+      handler: new CredentialManager({ service: pds }),
     });
     await fetchRepos();
   });
