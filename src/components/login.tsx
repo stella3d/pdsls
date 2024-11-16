@@ -142,7 +142,7 @@ const LoginStatus: Component = () => {
 
   return (
     <Show when={loginState() && handle()}>
-      <div>
+      <div class="mb-2">
         Logged in as @{handle()}
         <a
           href=""
