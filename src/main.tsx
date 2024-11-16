@@ -1,4 +1,12 @@
-import { createSignal, onMount, For, Show, type Component } from "solid-js";
+import {
+  createSignal,
+  onMount,
+  For,
+  Show,
+  type Component,
+  onCleanup,
+  createEffect,
+} from "solid-js";
 import { CredentialManager, XRPC } from "@atcute/client";
 import {
   ComAtprotoRepoDescribeRepo,
@@ -15,7 +23,7 @@ import {
   useLocation,
   useParams,
 } from "@solidjs/router";
-import { JSONValue } from "./lib/json.jsx";
+import { JSONValue } from "./components/json.jsx";
 import {
   AiFillGithub,
   Bluesky,
@@ -23,8 +31,9 @@ import {
   BsClipboardCheck,
   TbMoonStar,
   TbSun,
-} from "./lib/svg.jsx";
+} from "./components/svg.jsx";
 import { authenticate_post } from "public-transport";
+import { agent, loginState, LoginStatus } from "./components/login.jsx";
 
 let rpc = new XRPC({
   handler: new CredentialManager({ service: "https://public.api.bsky.app" }),
@@ -109,8 +118,19 @@ const resolvePDS = async (repo: string) => {
 const RecordView: Component = () => {
   const params = useParams();
   const [record, setRecord] = createSignal<ComAtprotoRepoGetRecord.Output>();
+  const [modal, setModal] = createSignal<HTMLDialogElement>();
+  const [open, setOpen] = createSignal(false);
+
+  let clickEvent = (event: MouseEvent) => {
+    if (modal() && event.target == modal()) setOpen(false);
+  };
+  let keyEvent = (event: KeyboardEvent) => {
+    if (modal() && event.key == "Escape") setOpen(false);
+  };
 
   onMount(async () => {
+    window.addEventListener("click", clickEvent);
+    window.addEventListener("keydown", keyEvent);
     setNotice("Loading...");
     setPDS(params.pds);
     let pds =
@@ -131,6 +151,11 @@ const RecordView: Component = () => {
     }
   });
 
+  onCleanup(() => {
+    window.removeEventListener("click", clickEvent);
+    window.removeEventListener("keydown", keyEvent);
+  });
+
   const getRecord = query(
     (repo: string, collection: string, rkey: string) =>
       rpc.get("com.atproto.repo.getRecord", {
@@ -139,8 +164,61 @@ const RecordView: Component = () => {
     "getRecord",
   );
 
+  const deleteRecord = action(async () => {
+    rpc = new XRPC({ handler: agent });
+    rpc.call("com.atproto.repo.deleteRecord", {
+      data: {
+        repo: params.repo,
+        collection: params.collection,
+        rkey: params.rkey,
+      },
+    });
+    throw redirect(`/at/${params.repo}/${params.collection}`);
+  });
+
+  createEffect(() => {
+    if (open()) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+  });
+
   return (
     <Show when={record()}>
+      <Show when={loginState() && agent.sub === params.repo}>
+        <div class="flex w-full justify-center">
+          <Show when={open()}>
+            <dialog
+              ref={setModal}
+              class="fixed left-0 top-0 z-[2] flex h-screen w-screen items-center justify-center bg-transparent font-sans"
+            >
+              <div class="dark:bg-dark-400 rounded-md border border-slate-900 bg-slate-100 p-4 text-slate-900 dark:border-slate-100 dark:text-slate-100">
+                <h3 class="text-lg font-bold">Delete this record?</h3>
+                <form action={deleteRecord} method="post">
+                  <div class="mt-2 inline-flex gap-2">
+                    <button
+                      onclick={() => setOpen(false)}
+                      class="dark:bg-dark-900 dark:hover:bg-dark-800 rounded-lg bg-white px-2.5 py-1.5 text-sm font-bold hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700 dark:focus:ring-slate-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="rounded-lg bg-red-500 px-2.5 py-1.5 text-sm font-bold text-slate-100 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-slate-700 dark:bg-red-600 dark:hover:bg-red-500 dark:focus:ring-slate-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </dialog>
+          </Show>
+          <button
+            onclick={() => setOpen(true)}
+            class="rounded-lg bg-red-500 px-2.5 py-1.5 font-sans text-sm font-bold text-slate-100 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-slate-700 dark:bg-red-600 dark:hover:bg-red-500 dark:focus:ring-slate-300"
+          >
+            Delete
+          </button>
+        </div>
+      </Show>
       <div class="overflow-y-auto pl-4">
         <JSONValue data={record() as any} repo={record()!.uri.split("/")[2]} />
       </div>
@@ -387,9 +465,12 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
   setNotice("");
 
   return (
-    <div class="m-5 flex flex-col items-center text-slate-900 dark:text-slate-100">
+    <div
+      id="main"
+      class="m-5 flex flex-col items-center text-slate-900 dark:text-slate-100"
+    >
       <div class="mb-2 flex w-[20rem] items-center">
-        <div class="basis-1/3">
+        <div class="flex basis-1/3 gap-x-2">
           <div
             class="w-fit cursor-pointer"
             onclick={() => {
@@ -404,6 +485,11 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
               <TbMoonStar class="size-6" />
             : <TbSun class="size-6" />}
           </div>
+          <Show when={!loginState()}>
+            <div>
+              <A href="/login">Login</A>
+            </div>
+          </Show>
         </div>
         <div class="basis-1/3 text-center font-mono text-xl font-bold">
           <A href="/" class="hover:underline">
@@ -422,6 +508,7 @@ const Layout: Component<RouteSectionProps<unknown>> = (props) => {
           </a>
         </div>
       </div>
+      <LoginStatus />
       <div class="mb-5 flex max-w-full flex-col items-center text-pretty lg:max-w-screen-lg">
         <form
           class="flex flex-col items-center gap-y-1"

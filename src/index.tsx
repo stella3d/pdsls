@@ -1,8 +1,8 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
 import "virtual:uno.css";
-import "./tailwind-compat.css";
-import "./index.css";
+import "./styles/tailwind-compat.css";
+import "./styles/index.css";
 import { Route, Router } from "@solidjs/router";
 import {
   Layout,
@@ -11,12 +11,14 @@ import {
   RecordView,
   RepoView,
   Home,
-} from "./App.tsx";
+} from "./main.tsx";
+import { Login } from "./components/login.tsx";
 
 render(
   () => (
     <Router root={Layout}>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/:pds" component={PdsView} />
       <Route path="/:pds/:repo" component={RepoView} />
       <Route path="/:pds/:repo/:collection" component={CollectionView} />
