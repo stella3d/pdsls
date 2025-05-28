@@ -60,7 +60,7 @@ const Search = () => {
   return (
     <>
       <form
-        class="flex flex-col items-center gap-y-1"
+        class="flex flex-col items-center gap-y-1 w-full max-w-[21rem] min-[544px]:max-w-[28rem] min-[640px]:max-w-[32rem] mx-auto"
         id="uriForm"
         onsubmit={(e) => e.preventDefault()}
       >
