@@ -84,7 +84,7 @@ const PdsView = () => {
 
   return (
     <Show when={repos() || response()}>
-      <div class="mt-3 flex flex-col w-[21rem] min-[544px]:w-[28rem] min-[640px]:w-[30rem] mx-auto">
+      <div class="mt-3 flex flex-col w-[21rem] min-[544px]:w-[24rem] min-[596px]:w-[26rem] mx-auto">
         <Show when={version()}>
           {(version) => <Field label="Version" value={version()} truncate />}
         </Show>

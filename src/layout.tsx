@@ -42,7 +42,7 @@ const Layout = (props: RouteSectionProps<unknown>) => {
           <Meta name="robots" content="noindex, nofollow" />
         </MetaProvider>
       </Show>
-      <div class="mb-2 flex w-[21rem] min-[544px]:w-[28rem] min-[640px]:w-[32rem] items-center">
+      <div class="mb-2 flex w-[21rem] min-[544px]:w-[24rem] min-[596px]:w-[26rem] items-center">
         <div class="flex basis-1/3 gap-x-2">
           <A href="/jetstream">
             <Tooltip text="Relay">
@@ -63,7 +63,7 @@ const Layout = (props: RouteSectionProps<unknown>) => {
           <Settings />
         </div>
       </div>
-      <div class="mb-5 flex flex-col flex-none items-center text-pretty w-[21rem] min-[544px]:w-[28rem] min-[640px]:w-[32rem]">
+      <div class="mb-5 flex flex-col flex-none items-center text-pretty w-[21rem] min-[396px]:w-[24rem] min-[444px]:w-[26rem] min-[480px]:w-[27rem] min-[544px]:w-[28rem] min-[592px]:w-[29rem] min-[616px]:w-[30rem]">
         <Show when={location.pathname !== "/jetstream" && location.pathname !== "/firehose"}>
           <Search />
         </Show>
